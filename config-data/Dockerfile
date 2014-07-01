@@ -4,7 +4,6 @@ MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 ADD http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo \
 	/etc/yum.repos.d/rhel-pulp.repo
 
-# Add EPEL
 RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
 
 RUN yum update -y && \
