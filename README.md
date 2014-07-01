@@ -3,7 +3,10 @@
 This repository contains dockerfiles for [Pulp](http://pulpproject.org/), a repository management system. Pulp may be used as a docker registry.
 
 ## Orchestration
-[GearD](http://openshift.github.io/geard/)
+Options
+* shell script
+* [GearD](http://openshift.github.io/geard/)
+* [Kubernetes](https://developers.google.com/compute/docs/containers#kubernetes)
 
 ## Component Images
 

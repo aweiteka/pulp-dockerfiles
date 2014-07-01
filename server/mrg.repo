@@ -1,0 +1,7 @@
+[mrg]
+name=MRG repository
+baseurl=http://download.eng.bos.redhat.com/brewroot/repos/mrg-2.4-rhel-6-build/latest/$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
