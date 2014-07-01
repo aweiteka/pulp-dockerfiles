@@ -1,10 +1,10 @@
-FROM centos:latest
+FROM rhel7:latest
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 RUN curl -o /etc/yum.repos.d/rhel-pulp.repo \
             http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo
 
-RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
 
 RUN yum update -y && \
     yum groupinstall -y --disablerepo=pulp-v2-stable --enablerepo=pulp-v2-beta \
