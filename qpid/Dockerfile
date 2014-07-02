@@ -1,10 +1,9 @@
 FROM rhel7:latest
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
-RUN curl -o /etc/yum.repos.d/rhel-pulp.repo \
-            http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo
+ADD http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 
-RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
+RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
 
 ADD mrg.repo /etc/yum.repos.d/mrg.repo
 
