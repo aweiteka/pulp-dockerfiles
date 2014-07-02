@@ -41,6 +41,9 @@ Crane is an API implementation of the docker protocol. It responds to docker cli
         docker run -d --name crane_server -p 5000:80 -v /root/crane_data:/var/lib/crane/metadata pulp/crane
 
 ### Mongo DB
+MongoDB is the datastore for the solutoin.
+
+	docker run -d -t -p 27017:27017 scollier/mongodb
 
 ### Qpid
 Messaging queue
