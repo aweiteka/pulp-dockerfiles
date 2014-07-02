@@ -5,8 +5,6 @@ ADD http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo /etc/yum.repos.
 
 RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
 
-ADD mrg.repo /etc/yum.repos.d/mrg.repo
-
 RUN  yum update -y && \
      yum install -y --disablerepo=pulp-v2-stable --enablerepo=pulp-v2-beta \
           qpid-cpp-server qpid-cpp-server-store python-qpid-qmf python-qpid \
