@@ -3,7 +3,15 @@
 case $1 in
   worker)
     if [ -n "$2" ]; then
-      exec sudo -u apache /usr/bin/celery worker --events --app=pulp.server.async.app --loglevel=INFO -c 1 -n reserved_resource_worker-$2@localhost --logfile=/var/log/pulp/reserved_resource_worker-$2.log --pidfile=/var/run/pulp/reserved_resource_worker-$2.pid
+      runuser apache \
+	-s /bin/bash /bin/bash \
+	-c "/usr/bin/celery worker \
+	--events --app=pulp.server.async.app \
+	--loglevel=INFO \
+	-c 1 \
+	-n reserved_resource_worker-$2@localhost \
+	--logfile=/var/log/pulp/reserved_resource_worker-$2.log \
+	--pidfile=/var/run/pulp/reserved_resource_worker-$2.pid"
     else
       echo "The 'worker' role must be assigned a unique number as the second positional argument."
       echo "For example 'worker 1'."
