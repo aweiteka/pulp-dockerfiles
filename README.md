@@ -9,6 +9,27 @@ Options
 * [Kubernetes](https://developers.google.com/compute/docs/containers#kubernetes)
 
 ## Component Images
+Start the containers in this order.
+
+### pulp data
+Shared configuration container. Provides volumes `/etc/pulp/` and `/var/www`
+
+    docker run -d -e MONGO=$(hostname -i) --name pulp-data pulp/data
+
+### Qpid
+Messaging queue
+
+    docker run -d -p 5672:5672 --name pulp-qpid pulp/qpid
+
+### Mongo DB
+MongoDB is the datastore for pulp content
+
+    docker run -d -t -p 27017:27017 scollier/mongodb
+
+### web server
+The is the pulp web server for the REST API and serving static content from pulp. This container also sets up the mongo database. It requires syslog so for now we mount /dev/log and run as `--privileged`.
+
+    docker run -d -t --privileged -v /dev/log:/dev/log --volumes-from pulp-data -p 443:443 pulp/apache
 
 ### Server
 This is the core pulp server image that may be invoked several ways.
@@ -26,24 +47,8 @@ This is the core pulp server image that may be invoked several ways.
 
         docker run -d --name pulp-resource-mgr aweiteka/pulp-server resource_manager
 
-* web server
-
-        docker run -d --name pulp-apache aweiteka/pulp-server apache
-
-### pulp data
-Shared configuration container. Provides volumes `/etc/pulp/` and `/var/www`
-
-        docker run -d --name pulp-data aweiteka/pulp-data
-
 ### Crane
-Crane is an API implementation of the docker protocol. It responds to docker client requests. See https://github.com/pulp/crane
+Crane is an API implementation of the docker protocol. It responds to docker client requests. This is the only end-user facing element to respond to docker client requests. See https://github.com/pulp/crane
 
-        docker run -d --name crane_server -p 5000:80 -v /root/crane_data:/var/lib/crane/metadata pulp/crane
+    docker run -d --name crane_server -p 5000:80 -v /root/crane_data:/var/lib/crane/metadata pulp/crane
 
-### Mongo DB
-MongoDB is the datastore for the solutoin.
-
-	docker run -d -t -p 27017:27017 scollier/mongodb
-
-### Qpid
-Messaging queue

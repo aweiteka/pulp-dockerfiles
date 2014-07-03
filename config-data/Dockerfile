@@ -18,3 +18,11 @@ RUN git clone https://github.com/pulp/pulp_docker.git /opt/pulp_docker
 RUN /opt/pulp_docker/manage_setup_pys.sh develop
 
 RUN python /opt/pulp_docker/pulp-dev.py -I
+
+RUN touch /etc/pulp/vhosts80/blank.conf
+
+VOLUME [ "/etc/pulp", "/var/www", "/opt/pulp_docker", "/var/lib/pulp" ]
+
+ADD ./run.sh /run.sh
+
+CMD [ "/run.sh" ]
