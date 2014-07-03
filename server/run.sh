@@ -3,7 +3,7 @@
 case $1 in
   worker)
     if [ -n "$2" ]; then
-      runuser apache \
+      exec runuser apache \
 	-s /bin/bash /bin/bash \
 	-c "/usr/bin/celery worker \
 	--events --app=pulp.server.async.app \
@@ -20,18 +20,26 @@ case $1 in
     fi
     ;;
   beat)
-    exec sudo -u apache /usr/bin/celery beat --scheduler=pulp.server.async.scheduler.Scheduler --workdir=/var/lib/pulp/celery/ -f /var/log/pulp/celerybeat.log -l INFO --detach --pidfile=/var/run/pulp/celerybeat.pid
+    exec runuser apache \
+      -s /bin/bash /bin/bash \
+      -c "/usr/bin/celery beat 
+         --scheduler=pulp.server.async.scheduler.Scheduler \
+         --workdir=/var/lib/pulp/celery/ \
+         -f /var/log/pulp/celerybeat.log -l INFO \
+         --detach --pidfile=/var/run/pulp/celerybeat.pid"
     ;;
   resource_manager)
-    exec sudo -u apache /usr/bin/celery worker -c 1 -n resource_manager@localhost --events --app=pulp.server.async.app --loglevel=INFO -Q resource_manager --logfile=/var/log/pulp/resource_manager.log --pidfile=/var/run/pulp/resource_manager.pid
-    ;;
-  apache)
-    rm -rf /run/httpd/*
-    exec /usr/sbin/apachectl -D FOREGROUND
+    exec runuser apache \
+      -s /bin/bash /bin/bash \
+      -c "/usr/bin/celery worker -c 1 -n resource_manager@localhost \
+          --events --app=pulp.server.async.app \
+          --loglevel=INFO -Q resource_manager \
+          --logfile=/var/log/pulp/resource_manager.log \
+          --pidfile=/var/run/pulp/resource_manager.pid"
     ;;
   *)
     echo "'$1' is not a supported celery command."
-    echo "Use one of the following: worker, beat, resource_manager, apache."
+    echo "Use one of the following: worker, beat, resource_manager."
     echo "Exiting"
     exit 1
     ;;
