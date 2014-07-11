@@ -1,13 +1,10 @@
-FROM rhel:latest
+FROM pulp/base
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
-ADD http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
+COMMENT { "description": "Pulp MongoDB server image", \ 
+          "usage": "docker run -d -p 27017:27017 --name pulp-mongodb pulp/mongodb" }
 
-RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
-
-RUN  yum update -y && \
-     yum install -y --disablerepo=pulp-v2-stable --enablerepo=pulp-v2-beta \
-         mongodb-server && \
+RUN  yum install -y mongodb-server && \
      yum clean all
 
 RUN  mkdir -p /var/lib/mongodb && \
@@ -15,6 +12,7 @@ RUN  mkdir -p /var/lib/mongodb && \
      chown -R mongodb:mongodb /var/lib/mongodb
 
 VOLUME ["/var/lib/mongodb"]
+
 USER mongodb
 
 ADD mongodb.conf /etc/mongodb.conf
