@@ -2,7 +2,7 @@ FROM pulp/base
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 COMMENT { "description": "Pulp configuration data shared volume", \ 
-          "usage": "docker run -d -e MONGO=$(hostname -i) --name pulp-data pulp/data" }
+          "usage": "docker run -d -e PULP_HOST=$(hostname) -e MONGO_HOST=$(hostname -i) --name pulp-data pulp/data" }
 
 RUN yum install -y git findutils && \
     yum clean all
