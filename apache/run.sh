@@ -3,15 +3,13 @@
 # create/migrate pulp_database
 runuser apache -s /bin/bash /bin/bash -c "/usr/bin/pulp-manage-db"
 
-echo $(hostname -f)
-
 cat > /root/ssl.conf <<EOF
 [ req ]
 prompt                  = no
 distinguished_name      = pulp_server
 
 [ pulp_server ]
-commonName              = $(hostname -f)
+commonName              = $APACHE_HOSTNAME
 stateOrProvinceName     = MA
 countryName             = US
 emailAddress            = admin@example.com
@@ -29,6 +27,7 @@ openssl x509 -req -days 365 -CA $CERT_PATH/ca.crt -CAkey $CERT_PATH/ca.key -set_
 
 sed -i "s/SSLCertificateFile \/etc\/pki\/tls\/certs\/localhost.crt/SSLCertificateFile \/etc\/pki\/pulp\/server.crt/" /etc/httpd/conf.d/ssl.conf
 sed -i "s/SSLCertificateKeyFile \/etc\/pki\/tls\/private\/localhost.key/SSLCertificateKeyFile \/etc\/pki\/pulp\/server.key/" /etc/httpd/conf.d/ssl.conf
+sed -i "s/#ServerName www.example.com:443/ServerName $APACHE_HOSTNAME:443/" /etc/httpd/conf.d/ssl.conf 
 
 cat /etc/httpd/conf.d/ssl.conf
 
