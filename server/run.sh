@@ -9,7 +9,8 @@ case $1 in
 	--events --app=pulp.server.async.app \
 	--loglevel=INFO \
 	-c 1 \
-	-n reserved_resource_worker-$2@localhost \
+        --umask=18 \
+	-n reserved_resource_worker-$2@$WORKER_HOST \
 	--logfile=/var/log/pulp/reserved_resource_worker-$2.log"
     else
       echo "The 'worker' role must be assigned a unique number as the second positional argument."
@@ -24,8 +25,9 @@ case $1 in
   resource_manager)
     exec runuser apache \
       -s /bin/bash \
-      -c "/usr/bin/celery worker -c 1 -n resource_manager@localhost \
+      -c "/usr/bin/celery worker -c 1 -n resource_manager@$WORKER_HOST \
           --events --app=pulp.server.async.app \
+          --umask=18 \
           --loglevel=INFO -Q resource_manager \
           --logfile=/var/log/pulp/resource_manager.log"
     ;;
