@@ -19,4 +19,4 @@ docker run -d -v /dev/log:/dev/log --volumes-from pulp-data --name pulp-beat awe
 docker run -d -e WORKER_HOST=$(hostname -i) -v /dev/log:/dev/log --volumes-from pulp-data --name pulp-resource_manager aweiteka/pulp-server resource_manager
 
 # crane
-docker run -d -p 80:5000 --volumes-from pulp-data pulp/crane-all-in-one
+docker run -d -p 80:80 --volumes-from pulp-data pulp/crane-all-in-one
