@@ -29,6 +29,4 @@ sed -i "s/SSLCertificateFile \/etc\/pki\/tls\/certs\/localhost.crt/SSLCertificat
 sed -i "s/SSLCertificateKeyFile \/etc\/pki\/tls\/private\/localhost.key/SSLCertificateKeyFile \/etc\/pki\/pulp\/server.key/" /etc/httpd/conf.d/ssl.conf
 sed -i "s/#ServerName www.example.com:443/ServerName $APACHE_HOSTNAME:443/" /etc/httpd/conf.d/ssl.conf 
 
-cat /etc/httpd/conf.d/ssl.conf
-
 exec /usr/sbin/init

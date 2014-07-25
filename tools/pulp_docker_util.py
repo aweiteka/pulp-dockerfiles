@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 from optparse import OptionParser
+import ConfigParser
+
 import os
 import sys
 import subprocess
@@ -22,18 +24,6 @@ class Session(object):
                           metavar="REGISTRY",
 			  default=False,
 			  help="Docker registry name for 'docker pull <my/registry>'. If not specified the repo id will be used",)
-	parser.add_option("-d", "--description",
-			  action="store",
-			  dest="repo_description",
-                          metavar="DESCRIPTION",
-			  default=False,
-			  help="Pulp repository description",)
-	parser.add_option("-n", "--name",
-			  action="store",
-			  dest="repo_name",
-                          metavar="DISPLAY_NAME",
-			  default=False,
-			  help="Pulp repository display name",)
 	parser.add_option("-u", "--url",
 			  action="store",
 			  dest="redirect_url",
@@ -46,11 +36,22 @@ class Session(object):
                           metavar="FILENAME",
 			  default=False,
 			  help="Full path to image tarball for upload")
+	parser.add_option("-n", "--note",
+			  action="store",
+			  dest="note",
+                          metavar="KEY=VALUE",
+			  default=False,
+			  help="Arbitrary key:value pairs")
 	parser.add_option("-p", "--publish",
 			  action="store_true",
 			  dest="publish",
 			  default=False,
 			  help="Publish repository. May be added to image upload or used alone.",)
+	parser.add_option("-P", "--port",
+			  action="store",
+			  dest="port",
+			  default="8080",
+			  help="Port for redirect URL where images will be served from. Written to .json file for crane.",)
 	parser.add_option("-l", "--list",
 			  action="store_true",
 			  dest="list_repos",
@@ -68,6 +69,13 @@ class Session(object):
         # FIXME: option scope not yet determined
         #self.validate_args(parser, options)
         return options
+
+    @property
+    def conf_redirect_url(self):
+        file = os.path.expanduser('~/.pulp/publish.conf')
+	config = ConfigParser.RawConfigParser()
+	config.read(file)
+        return config.get('redirect', 'url')
 
     def validate_args(self, parser, options):
         mandatories = ['repo_id']
@@ -120,7 +128,11 @@ class Session(object):
 
     @property
     def repo_list_long(self):
-        return self.run_cmd("list --fields id,description,notes,content_unit_counts")
+        return self.run_cmd("list --fields id,notes,content_unit_counts")
+
+    def modify_url(self, url):
+        # http://host:8080/pulp/docker/true
+        return url + ":" + self.opts.port + "/pulp/docker/" + self.opts.repo_id
 
     @property
     def delete_repo(self):
@@ -129,15 +141,14 @@ class Session(object):
     def create_repo(self):
         if not self.is_repo(self.opts.repo_id):
             options = ""
-            if self.opts.registry_id:
-                options += "--repo-registry-id \"%s\" " % self.opts.registry_id
-            if self.opts.repo_description:
-                options += "--description \"%s\" " % self.opts.repo_description
-            if self.opts.repo_name:
-                options += "--display-name \"%s\" " % self.opts.repo_name
             if self.opts.redirect_url:
-                options += "--redirect-url %s " % self.opts.redirect_url
-            print "create --repo-id %s %s" % (self.opts.repo_id, options)
+                options += "--redirect-url %s " % self.modify_url(self.opts.redirect_url)
+            else:
+                options += "--redirect-url %s " % self.modify_url(self.conf_redirect_url)
+            if self.opts.registry_id:
+                options += "--repo-registry-id %s " % self.opts.registry_id
+            if self.opts.note:
+                options += "--note %s " % self.opts.note
             self.run_cmd("create --repo-id %s %s" % (self.opts.repo_id, options))
         else:
             print "Repository %s exists. Skipping repo create." % self.opts.repo_id
@@ -149,7 +160,7 @@ class Session(object):
             return
         image_tar = ""
         if self.is_stdin:
-            image_tar = self.save_file()
+            image_tar = self.stdin_tar_file
         else:
             image_tar = self.opts.image_file
         self.run_cmd("uploads upload --repo-id %s -f %s" % (self.opts.repo_id, image_tar))
@@ -167,12 +178,12 @@ class Session(object):
         cmd = cmd.split()
         return subprocess.call(self.client_base + cmd)
 
-    def save_file(self):
-	CHUNKSIZE = 8192
-	tarball = "/tmp/test.tar"
-	f = open(tarball, 'wb')
-        #f = tempfile.NamedTemporaryFile(mode='w+b')
+    @property
+    def stdin_tar_file(self):
+	CHUNKSIZE = 1048576
+        f = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
 	sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
+        print "Saving file from STDIN "
 	try:
 	    bytes_read = sys.stdin.read(CHUNKSIZE)
 	    while bytes_read:
@@ -180,10 +191,9 @@ class Session(object):
 		    f.write(b)
 		bytes_read = sys.stdin.read(CHUNKSIZE)
 	finally:
+            print "completed"
 	    pass
-	#f.close()
-        #return f.name
-        return tarball
+        return f.name
 
 
 

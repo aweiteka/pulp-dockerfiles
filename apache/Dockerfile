@@ -26,7 +26,10 @@ rm -f /lib/systemd/system/anaconda.target.wants/*; \
 systemctl enable httpd.service
 
 EXPOSE 443
+EXPOSE 80
 
+ADD docker.conf /etc/pulp/vhosts80/docker.conf
 ADD run.sh /run.sh
+RUN ln -s /var/www/pub/docker/web /var/www/pub/docker/web80
 
 CMD [ "/run.sh" ]

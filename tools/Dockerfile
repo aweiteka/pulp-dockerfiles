@@ -5,5 +5,5 @@ MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 ADD pulp_docker_util.py /root/pulp_utils/pulp_docker_util.py
 
 # -u read unbuffered input from STDIN
-#ENTRYPOINT ["python", "-u", "/root/pulp_utils/pulp_docker_util.py"]
-ENTRYPOINT ["/usr/bin/pulp-admin", "docker", "repo", "list"]
+ENTRYPOINT ["python", "-u", "/root/pulp_utils/pulp_docker_util.py"]
+#ENTRYPOINT ["/usr/bin/pulp-admin", "docker", "repo", "list"]
