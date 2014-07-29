@@ -23,6 +23,3 @@ RUN python /opt/pulp_docker/pulp-dev.py -I
 
 # HACK: may not be needed
 RUN touch /etc/pulp/vhosts80/blank.conf
-
-COMMENT { "description": "base image for pulp images", \ 
-          "usage": "Dockerfile FROM pulp/base" }
