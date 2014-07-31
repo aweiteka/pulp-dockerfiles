@@ -1,9 +1,6 @@
 FROM pulp/rhelbase
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
-COMMENT { "description": "Pulp MongoDB server image", \ 
-          "usage": "docker run -d -p 27017:27017 --name pulp-mongodb pulp/mongodb" }
-
 RUN  yum install -y mongodb-server && \
      yum clean all
 

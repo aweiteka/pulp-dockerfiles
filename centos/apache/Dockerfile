@@ -1,9 +1,6 @@
 FROM pulp/centosbase
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
-COMMENT { "description": "Pulp apache server image", \ 
-          "usage": "docker run -d -p 443:443 --privileged -v /dev/log:/dev/log --volumes-from pulp-data -e APACHE_HOSTNAME=`hostname` pulp/apache" }
-
 ENV container docker
 
 VOLUME [ "/sys/fs/cgroup" ]
