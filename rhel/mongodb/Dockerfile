@@ -1,4 +1,4 @@
-FROM pulp/base
+FROM pulp/rhelbase
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 COMMENT { "description": "Pulp MongoDB server image", \ 

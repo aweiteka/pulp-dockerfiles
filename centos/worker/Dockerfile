@@ -1,4 +1,4 @@
-FROM pulp/base
+FROM pulp/centosbase
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 # may not need python-pulp-rpm-common
