@@ -1,16 +1,18 @@
-FROM centos7:latest
+FROM centos:latest
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
-RUN curl -o /etc/yum.repos.d/rhel-pulp.repo \
-            http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo
+#RUN curl -o /etc/yum.repos.d/rhel-pulp.repo \
+#            http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo
+
+ADD rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 
 RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
 
 # workaround: python-pulp-rpm-common not installed by groupinstall
 RUN  yum update -y && \
-     yum groupinstall -y --disablerepo=pulp-v2-stable --enablerepo=pulp-v2-beta \
+     yum groupinstall -y \
          pulp-admin && \
-     yum install -y --disablerepo=pulp-v2-stable --enablerepo=pulp-v2-beta \
+     yum install -y \
          python-pulp-rpm-common git && \
      yum clean all
 

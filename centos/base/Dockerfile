@@ -1,14 +1,15 @@
-FROM centos7:latest
+FROM centos:latest
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
-ADD http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo \
-	/etc/yum.repos.d/rhel-pulp.repo
+#ADD https://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo \
+#	/etc/yum.repos.d/rhel-pulp.repo
+
+ADD rhel-pulp.repo /etc/yum.repos.d/rhel-pulp.repo
 
 RUN yum -y install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
 
 RUN yum update -y && \
-    yum groupinstall -y --disablerepo=pulp-v2-stable --enablerepo=pulp-v2-beta \
-        pulp-server && \
+    yum groupinstall -y pulp-server && \
     yum clean all
 
 RUN yum install -y git findutils && \
@@ -22,4 +23,4 @@ RUN /opt/pulp_docker/manage_setup_pys.sh develop
 RUN python /opt/pulp_docker/pulp-dev.py -I
 
 # HACK: may not be needed
-RUN touch /etc/pulp/vhosts80/blank.conf
+#RUN touch /etc/pulp/vhosts80/blank.conf
