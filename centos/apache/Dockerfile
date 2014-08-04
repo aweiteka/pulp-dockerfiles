@@ -1,4 +1,4 @@
-FROM pulp/centosbase
+FROM aweiteka/pulp-centosbase
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 ENV container docker
