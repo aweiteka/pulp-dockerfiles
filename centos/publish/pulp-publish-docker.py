@@ -12,34 +12,34 @@ class Session(object):
     @property
     def opts(self):
 	parser = OptionParser(usage=self.usage, version="%prog 0.1")
-	parser.add_option("-r", "--repo",
+	parser.add_option("-i", "--id",
 			  action="store",
 			  dest="repo_id",
-                          metavar="REPO",
+              metavar="REPO",
 			  default=False,
 			  help="Pulp repository ID, required for most pulp commands. Only alphanumeric, ., -, and _ allowed")
-	parser.add_option("-R", "--registry",
+	parser.add_option("-r", "--repo",
 			  action="store",
 			  dest="registry_id",
-                          metavar="REGISTRY",
+              metavar="REGISTRY",
 			  default=False,
 			  help="Docker registry name for 'docker pull <my/registry>'. If not specified the repo id will be used",)
 	parser.add_option("-u", "--url",
 			  action="store",
 			  dest="redirect_url",
-                          metavar="URL",
+              metavar="URL",
 			  default=False,
 			  help="The URL that will be used when generating the redirect. Defaults to pulp server, https://<pulp_server>/pulp/docker/<repo_id>",)
 	parser.add_option("-f", "--file",
 			  action="store",
 			  dest="image_file",
-                          metavar="FILENAME",
+              metavar="FILENAME",
 			  default=False,
 			  help="Full path to image tarball for upload")
 	parser.add_option("-n", "--note",
 			  action="store",
 			  dest="note",
-                          metavar="KEY=VALUE",
+              metavar="KEY=VALUE",
 			  default=False,
 			  help="Arbitrary key:value pairs")
 	parser.add_option("-p", "--publish",
@@ -57,14 +57,10 @@ class Session(object):
 			  dest="list_repos",
 			  default=False,
 			  help="List repositories. Used alone.",)
-	parser.add_option("-D", "--delete",
-			  action="store_true",
-			  dest="delete_repo",
-			  default=False,
-			  help="Delete a repository. Used alone.",)
 	(options, args) = parser.parse_args()
-        #if len(args) < 1:
-        #    parser.error("At least one argument is required.")
+        #if len(options) < 1:
+        #    parser.print_help()
+        #    exit(1)
 
         # FIXME: option scope not yet determined
         #self.validate_args(parser, options)
@@ -88,22 +84,19 @@ class Session(object):
         return """
     Upload (2 methods): will create repo if needed, optional publish
       STDIN from "docker save"
-      docker save <repo> | ./%prog --repo <repo> [OPTIONS]
+      docker save <docker_repo> | %prog --id <pulp_id> [OPTIONS]
 
       from previously saved tar file
-      ./%prog --repo <repo> -f </full/path/to/image.tar> [OPTIONS]
+      %prog --id <pulp_id> -f /run/docker_uploads/<image.tar> [OPTIONS]
 
     Create repo only (do not upload or publish):
-    ./%prog --repo <repo> [OPTIONS]
+    ./%prog --id <pulp_id> [OPTIONS]
 
     Publish existing repo:
-    ./%prog --repo <repo> --publish
+    ./%prog --id <pulp_id> --publish
 
     List repos:
-    ./%prog --list
-
-    Delete repo and all images:
-    ./%prog --repo <repo> --delete"""
+    ./%prog --list"""
 
     @property
     def client_base(self):
@@ -111,13 +104,6 @@ class Session(object):
 
     def is_repo(self, repo):
         return any(repo in r for r in self.repo_list_short)
-
-    @property
-    def is_stdin(self):
-        if not sys.stdin.isatty():
-            return True
-        else:
-            return False
 
     @property
     def repo_list_short(self):
@@ -133,10 +119,6 @@ class Session(object):
     def modify_url(self, url):
         # http://host:8080/pulp/docker/true
         return url + ":" + self.opts.port + "/pulp/docker/" + self.opts.repo_id
-
-    @property
-    def delete_repo(self):
-        return self.run_cmd("delete --repo-id %s" % self.opts.repo_id)
 
     def create_repo(self):
         if not self.is_repo(self.opts.repo_id):
@@ -155,14 +137,14 @@ class Session(object):
 
     def upload_image(self):
         # FIXME: move to validate section
-        if not self.is_stdin and not self.opts.image_file:
-            print "STDIN or tar file not provided. Skipping upload."
-            return
+        #if not self.is_stdin and not self.opts.image_file:
+        #    print "STDIN or tar file not provided. Skipping upload."
+        #    return
         image_tar = ""
-        if self.is_stdin:
-            image_tar = self.stdin_tar_file
-        else:
+        if self.opts.image_file:
             image_tar = self.opts.image_file
+        else:
+            image_tar = self.stdin_tar_file
         self.run_cmd("uploads upload --repo-id %s -f %s" % (self.opts.repo_id, image_tar))
 
     def publish_repo(self):
@@ -201,9 +183,6 @@ def main():
     session = Session()
     if session.opts.list_repos:
         session.repo_list_long
-        exit(0)
-    elif session.opts.delete_repo:
-        session.delete_repo
         exit(0)
     session.create_repo()
     session.upload_image()

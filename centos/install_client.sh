@@ -30,13 +30,13 @@ EOF
 
 ls -l ~/.pulp
 
-echo "Create /tmp/docker_uploads"
-sudo mkdir -p /tmp/docker_uploads
-sudo chcon -Rvt svirt_sandbox_file_t /tmp/docker_uploads
+echo "Create /run/docker_uploads"
+sudo mkdir -p /run/docker_uploads
+sudo chcon -Rvt svirt_sandbox_file_t /run/docker_uploads
 
 echo "Update ~/.bashrc with aliases"
-echo "alias pulp-admin='sudo docker run --rm -t -v ~/.pulp:/.pulp -v /tmp/docker_uploads/:/tmp/docker_uploads/ aweiteka/pulp-admin'" >> ~/.bashrc
-echo "alias pulp-publish-docker='sudo docker run --rm -i -t -v ~/.pulp:/.pulp -v /tmp/docker_uploads/:/tmp/docker_uploads/ aweiteka/pulp-publish-docker'" >> ~/.bashrc
+echo "alias pulp-admin='sudo docker run --rm -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-admin'" >> ~/.bashrc
+echo "alias pulp-publish-docker='sudo docker run --rm -i -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-publish-docker'" >> ~/.bashrc
 source ~/.bashrc
 
 echo "2 aliases created"
