@@ -17,7 +17,7 @@ RUN  yum update -y && \
      yum clean all
 
 # config and uploads dir
-VOLUME ["/.pulp", "/tmp/pulp_uploads"]
+VOLUME ["/.pulp", "/run/pulp_uploads"]
 
 # install pulp_docker plugin to manage docker image repositories
 RUN git clone https://github.com/pulp/pulp_docker.git /opt/pulp_docker

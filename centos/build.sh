@@ -15,5 +15,5 @@ IMAGES+=( ["base"]=aweiteka/pulp-centosbase \
 
 for dir in ${!IMAGES[@]}; do
   echo "Building ${IMAGES[${dir}]} ..."
-  sudo docker build --no-cache -t ${IMAGES[${dir}]}:$(date +%F) ${dir}
+  sudo docker build --no-cache -t ${IMAGES[${dir}]} ${dir}
 done
