@@ -4,7 +4,7 @@
 [pulp-v2-stable]
 name=Pulp v2 Production Releases
 baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/stable/2/7Server/$basearch/
-enabled=0
+enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
@@ -12,7 +12,7 @@ gpgcheck=0
 [pulp-v2-beta]
 name=Pulp v2 Beta Builds
 baseurl=http://repos.fedorapeople.org/repos/pulp/pulp/beta/2.4/7Server/$basearch/
-enabled=1
+enabled=0
 skip_if_unavailable=1
 gpgcheck=0
 

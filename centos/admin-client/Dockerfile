@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM centos:centos7
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 #RUN curl -o /etc/yum.repos.d/rhel-pulp.repo \

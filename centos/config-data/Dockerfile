@@ -1,4 +1,4 @@
-FROM aweiteka/pulp-centosbase
+FROM aweiteka/pulp-centosbase:latest
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 #VOLUME [ "/etc/pulp", "/var/www", "/opt/pulp_docker" ]

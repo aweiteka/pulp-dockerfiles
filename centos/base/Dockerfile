@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM centos:centos7
 MAINTAINER Aaron Weitekamp <aweiteka@redhat.com>
 
 #ADD https://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo \

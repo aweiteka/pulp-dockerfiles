@@ -41,4 +41,4 @@ source ~/.bashrc
 
 echo "2 aliases created"
 
-echo "Login with command \"pulp-admin login -u admin -p admin\""
+echo "Login with command \"pulp-admin login -u <username> -p <password>\""
