@@ -38,8 +38,9 @@ sudo chcon -Rv -u system_u -t svirt_sandbox_file_t /run/docker_uploads
 echo "Update ~/.bashrc with aliases"
 echo "alias pulp-admin='sudo docker run --rm -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-admin'" >> ~/.bashrc
 echo "alias pulp-publish-docker='sudo docker run --rm -i -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-publish-docker'" >> ~/.bashrc
-source ~/.bashrc
 
-echo "2 aliases created"
+echo "2 aliases added to ~/.bashrc"
 
-echo "Login with command \"pulp-admin login -u <username> -p <password>\""
+echo "Install complete"
+echo "Run \"source ~/.bashrc\" to update aliases in the current shell."
+echo "Then login with command \"pulp-admin login -u <username> -p <password>\""
