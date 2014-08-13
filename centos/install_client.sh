@@ -21,6 +21,7 @@ chcon -Rvt svirt_sandbox_file_t ~/.pulp
 cat << EOF > ~/.pulp/admin.conf
 [server]
 host = $PULP_HOSTNAME
+ssl_verify = false
 EOF
 
 cat << EOF > ~/.pulp/publish.conf
@@ -32,7 +33,7 @@ ls -l ~/.pulp
 
 echo "Create /run/docker_uploads"
 sudo mkdir -p /run/docker_uploads
-sudo chcon -Rvt svirt_sandbox_file_t /run/docker_uploads
+sudo chcon -Rv -u system_u -t svirt_sandbox_file_t /run/docker_uploads
 
 echo "Update ~/.bashrc with aliases"
 echo "alias pulp-admin='sudo docker run --rm -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-admin'" >> ~/.bashrc
