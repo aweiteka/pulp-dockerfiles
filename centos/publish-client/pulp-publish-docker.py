@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/python -Es
 
+#argparse
 from optparse import OptionParser
 import ConfigParser
 
@@ -11,53 +12,53 @@ import tempfile
 class Session(object):
     @property
     def opts(self):
-	parser = OptionParser(usage=self.usage, version="%prog 0.1")
-	parser.add_option("-i", "--id",
-			  action="store",
-			  dest="repo_id",
+        parser = OptionParser(usage=self.usage, version="%prog 0.1")
+        parser.add_option("-i", "--id",
+		      action="store",
+		      dest="repo_id",
               metavar="REPO",
-			  default=False,
-			  help="Pulp repository ID, required for most pulp commands. Only alphanumeric, ., -, and _ allowed")
-	parser.add_option("-r", "--repo",
-			  action="store",
-			  dest="registry_id",
+		      default=False,
+		      help="Pulp repository ID, required for most pulp commands. Only alphanumeric, ., -, and _ allowed")
+        parser.add_option("-r", "--repo",
+              action="store",
+              dest="registry_id",
               metavar="REGISTRY",
-			  default=False,
-			  help="Docker registry name for 'docker pull <my/registry>'. If not specified the repo id will be used",)
-	parser.add_option("-u", "--url",
-			  action="store",
-			  dest="redirect_url",
+              default=False,
+              help="Docker registry name for 'docker pull <my/registry>'. If not specified the repo id will be used",)
+        parser.add_option("-u", "--url",
+              action="store",
+              dest="redirect_url",
               metavar="URL",
-			  default=False,
-			  help="The URL that will be used when generating the redirect. Defaults to pulp server, https://<pulp_server>/pulp/docker/<repo_id>",)
-	parser.add_option("-f", "--file",
-			  action="store",
-			  dest="image_file",
+              default=False,
+              help="The URL that will be used when generating the redirect. Defaults to pulp server, https://<pulp_server>/pulp/docker/<repo_id>",)
+        parser.add_option("-f", "--file",
+              action="store",
+              dest="image_file",
               metavar="FILENAME",
-			  default=False,
-			  help="Full path to image tarball for upload")
-	parser.add_option("-n", "--note",
-			  action="store",
-			  dest="note",
+              default=False,
+              help="Full path to image tarball for upload")
+        parser.add_option("-n", "--note",
+              action="store",
+              dest="note",
               metavar="KEY=VALUE",
-			  default=False,
-			  help="Arbitrary key:value pairs")
-	parser.add_option("-p", "--publish",
-			  action="store_true",
-			  dest="publish",
-			  default=False,
-			  help="Publish repository. May be added to image upload or used alone.",)
-	parser.add_option("-P", "--port",
-			  action="store",
-			  dest="port",
-			  default="8080",
-			  help="Port for redirect URL where images will be served from. Written to .json file for crane.",)
-	parser.add_option("-l", "--list",
-			  action="store_true",
-			  dest="list_repos",
-			  default=False,
-			  help="List repositories. Used alone.",)
-	(options, args) = parser.parse_args()
+              default=False,
+              help="Arbitrary key:value pairs")
+        parser.add_option("-p", "--publish",
+              action="store_true",
+              dest="publish",
+              default=False,
+              help="Publish repository. May be added to image upload or used alone.",)
+        parser.add_option("-P", "--port",
+              action="store",
+              dest="port",
+              default="8080",
+              help="Port for redirect URL where images will be served from. Written to .json file for crane.",)
+        parser.add_option("-l", "--list",
+              action="store_true",
+              dest="list_repos",
+              default=False,
+              help="List repositories. Used alone.",)
+        (options, args) = parser.parse_args()
         #if len(options) < 1:
         #    parser.print_help()
         #    exit(1)
@@ -69,8 +70,8 @@ class Session(object):
     @property
     def conf_redirect_url(self):
         file = os.path.expanduser('~/.pulp/publish.conf')
-	config = ConfigParser.RawConfigParser()
-	config.read(file)
+        config = ConfigParser.RawConfigParser()
+        config.read(file)
         return config.get('redirect', 'url')
 
     def validate_args(self, parser, options):
@@ -137,9 +138,9 @@ class Session(object):
 
     def upload_image(self):
         # FIXME: move to validate section
-        #if not self.is_stdin and not self.opts.image_file:
-        #    print "STDIN or tar file not provided. Skipping upload."
-        #    return
+        if not sys.stdin and not self.opts.image_file:
+            print "STDIN or tar file not provided. Skipping upload."
+            return
         image_tar = ""
         if self.opts.image_file:
             image_tar = self.opts.image_file
@@ -162,19 +163,19 @@ class Session(object):
 
     @property
     def stdin_tar_file(self):
-	CHUNKSIZE = 1048576
+        CHUNKSIZE = 1048576
         f = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
-	sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
+        #sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
         print "Saving file from STDIN "
-	try:
-	    bytes_read = sys.stdin.read(CHUNKSIZE)
-	    while bytes_read:
-		for b in bytes_read:
-		    f.write(b)
-		bytes_read = sys.stdin.read(CHUNKSIZE)
-	finally:
+        try:
+            bytes_read = sys.stdin.read(CHUNKSIZE)
+            while bytes_read:
+                for b in bytes_read:
+                    f.write(b)
+                bytes_read = sys.stdin.read(CHUNKSIZE)
+        finally:
             print "completed"
-	    pass
+            pass
         return f.name
 
 
