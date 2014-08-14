@@ -50,9 +50,6 @@ install() {
          --name pulp-data \
          aweiteka/pulp-data
 
-  ip=$(private_ip)
-  echo "Private IP: ${ip}"
-
   # mongo
   # mount host  -v /var/lib/mongo:/run/pulp/mongo
   sudo docker run -d \
@@ -60,7 +57,7 @@ install() {
          --name pulp-mongodb \
          aweiteka/pulp-mongodb
 
-  echo private_ip
+  echo $(private_ip)
 
   # qpid
   sudo docker run -d \
