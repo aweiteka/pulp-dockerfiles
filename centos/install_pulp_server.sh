@@ -26,18 +26,16 @@ usage() {
   exit 1
 }
 
-last_pid() {
-  local last_pid=$(docker ps -l -q)
-}
-
-private_ip() {
-  local priv_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(last_pid))
+function private_ip() {
+  local priv_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(docker ps -l -q))
+  echo $priv_ip
 }
 
 install() {
 
   PULP_IP=$1
 
+  echo "Using hostname '$(hostname)'"
   echo "Pulling docker images. This may take several minutes."
 
   for i in "${IMAGES[@]}"; do sudo docker pull $i; done
@@ -52,7 +50,8 @@ install() {
          --name pulp-data \
          aweiteka/pulp-data
 
-  echo private_ip
+  ip=$(private_ip)
+  echo "Private IP: ${ip}"
 
   # mongo
   # mount host  -v /var/lib/mongo:/run/pulp/mongo
