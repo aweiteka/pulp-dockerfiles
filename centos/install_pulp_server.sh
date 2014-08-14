@@ -30,11 +30,11 @@ install() {
 
   PULP_IP=$1
 
-  echo "Pulling docker images. This will take several minutes."
+  echo "Pulling docker images. This may take several minutes."
 
   for i in "${IMAGES[@]}"; do sudo docker pull $i; done
 
-  echo "running docker images"
+  echo "Running docker images"
 
   # data
   sudo docker run \
@@ -110,11 +110,13 @@ uninstall() {
   echo "Uninstalling Pulp server"
   for c in "${CONTAINERS[@]}"; do
     PID=$(docker ps | awk "/$c/ {print \$1}")
-    echo "Stopping container ${c} PID ${PID}"
+    echo "Stopping container ${c}"
+    docker stop {PID
   done
   for c in "${CONTAINERS[@]}"; do
     PID=$(docker ps -a | awk "/$c/ {print \$1}")
-    echo "Removing container ${c} PID ${PID}"
+    echo "Removing container ${c}"
+    docker rm $PID
   done
 
 }
