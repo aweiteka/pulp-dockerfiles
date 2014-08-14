@@ -111,7 +111,7 @@ uninstall() {
   for c in "${CONTAINERS[@]}"; do
     PID=$(docker ps | awk "/$c/ {print \$1}")
     echo "Stopping container ${c}"
-    docker stop {PID
+    docker stop $PID
   done
   for c in "${CONTAINERS[@]}"; do
     PID=$(docker ps -a | awk "/$c/ {print \$1}")
