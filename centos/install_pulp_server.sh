@@ -34,21 +34,14 @@ function private_ip() {
 install() {
 
   PULP_IP=$1
+  PULP_HOST=$(hostname)
 
-  echo "Using hostname '$(hostname)'"
+  echo "Using hostname '${PULP_HOST}'"
   echo "Pulling docker images. This may take several minutes."
 
   for i in "${IMAGES[@]}"; do sudo docker pull $i; done
 
   echo "Running docker images"
-
-  # data
-  sudo docker run \
-         -e PULP_HOST=$(hostname) \
-         -e MONGO_HOST=$PULP_IP \
-         -e QPID_HOST=$PULP_IP \
-         --name pulp-data \
-         aweiteka/pulp-data
 
   # mongo
   # mount host  -v /var/lib/mongo:/run/pulp/mongo
@@ -57,7 +50,8 @@ install() {
          --name pulp-mongodb \
          aweiteka/pulp-mongodb
 
-  echo $(private_ip)
+  MONGO_IP=$(private_ip)
+  echo "Mongo private IP: ${MONGO_IP}"
 
   # qpid
   sudo docker run -d \
@@ -65,28 +59,35 @@ install() {
          --name pulp-qpid \
          aweiteka/pulp-qpid
 
-  echo private_ip
+  QPID_IP=$(private_ip)
+  echo "qpid private IP: ${QPID_IP}"
+
+  # data
+  sudo docker run \
+         -e PULP_HOST=${PULP_HOST} \
+         -e MONGO_HOST=$MONGO_IP \
+         -e QPID_HOST=$QPID_IP \
+         --name pulp-data \
+         aweiteka/pulp-data
 
   # apache -- creates/migrates pulp_database
   sudo docker run -d --privileged \
          -v /dev/log:/dev/log \
          --volumes-from pulp-data \
          -p 443:443 -p 8080:80 \
-         -e APACHE_HOSTNAME=$(hostname) \
+         -e APACHE_HOSTNAME=${PULP_HOST} \
          --name pulp-apache \
          aweiteka/pulp-apache
 
-  echo private_ip
-
   # pulp workers
   sudo docker run -d --privileged \
-         -e WORKER_HOST=$PULP_IP \
+         -e WORKER_HOST=${PULP_HOST} \
          -v /dev/log:/dev/log \
          --volumes-from pulp-data \
          --name pulp-worker1 \
          aweiteka/pulp-worker worker 1
   sudo docker run -d --privileged \
-         -e WORKER_HOST=$PULP_IP \
+         -e WORKER_HOST=${PULP_HOST} \
          -v /dev/log:/dev/log \
          --volumes-from pulp-data \
          --name pulp-worker2 \
@@ -97,7 +98,7 @@ install() {
          --name pulp-beat \
          aweiteka/pulp-worker beat
   sudo docker run -d --privileged \
-         -e WORKER_HOST=$PULP_IP \
+         -e WORKER_HOST=${PULP_HOST} \
          -v /dev/log:/dev/log \
          --volumes-from pulp-data \
          --name pulp-resource_manager \
