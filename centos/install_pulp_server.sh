@@ -26,6 +26,14 @@ usage() {
   exit 1
 }
 
+last_pid() {
+  local last_pid=$(docker ps -l -q)
+}
+
+private_ip() {
+  local priv_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(last_pid))
+}
+
 install() {
 
   PULP_IP=$1
@@ -44,6 +52,8 @@ install() {
          --name pulp-data \
          aweiteka/pulp-data
 
+  echo private_ip
+
   # mongo
   # mount host  -v /var/lib/mongo:/run/pulp/mongo
   sudo docker run -d \
@@ -51,11 +61,15 @@ install() {
          --name pulp-mongodb \
          aweiteka/pulp-mongodb
 
+  echo private_ip
+
   # qpid
   sudo docker run -d \
          -p 5672:5672 \
          --name pulp-qpid \
          aweiteka/pulp-qpid
+
+  echo private_ip
 
   # apache -- creates/migrates pulp_database
   sudo docker run -d --privileged \
@@ -65,6 +79,8 @@ install() {
          -e APACHE_HOSTNAME=$(hostname) \
          --name pulp-apache \
          aweiteka/pulp-apache
+
+  echo private_ip
 
   # pulp workers
   sudo docker run -d --privileged \
