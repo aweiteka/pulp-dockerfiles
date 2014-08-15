@@ -21,7 +21,7 @@ chcon -Rvt svirt_sandbox_file_t ~/.pulp
 cat << EOF > ~/.pulp/admin.conf
 [server]
 host = $PULP_HOSTNAME
-ssl_verify = false
+verify_ssl = False
 EOF
 
 cat << EOF > ~/.pulp/publish.conf
