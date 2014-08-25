@@ -52,6 +52,7 @@ class Cli(object):
         create_parser = subparsers.add_parser('create', help='repository')
         create_parser.add_argument('repo',
                            metavar='MY/APP',
+                           #action=self.convert_repo_name(),
                            help='Repository name')
         create_parser.add_argument('-g', '--git-url',
                            metavar='http://git.example.com/repo/myapp',
@@ -68,9 +69,14 @@ class Cli(object):
                            choices=['repos', 'images'],
                            help='What to list')
         login_parser = subparsers.add_parser('login', help='Login to pulp server')
-        login_parser.add_argument('username',
+        login_parser.add_argument('-u', '--username',
                            metavar='USERNAME',
+                           action=LoginUser,
                            help='Pulp registry username')
+        login_parser.add_argument('-p', '--password',
+                           metavar='PASSWORD',
+                           action=LoginUser,
+                           help='Pulp registry password')
         pulp_parser = subparsers.add_parser('pulp', help='pulp-admin commands')
         pulp_parser.add_argument('pulp_cmd',
                            metavar='"PULP COMMAND FOO BAR"',
@@ -78,24 +84,54 @@ class Cli(object):
                            help='pulp-admin command string')
         return parser.parse_args()
 
-    def convert_repo_name(self):
-        myargs = self.args
+    def action(self):
+        #myargs = self.args
         #print myargs
+        print self.convert_repo_name(self.args.repo)
+
+    def convert_repo_name(self, repo):
+        return repo.replace("/", "-")
 
 class Pulp(argparse.Action):
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
-        if nargs is not None:
-            raise ValueError("nargs not allowed")
+        #if nargs is not None:
+        #    raise ValueError("nargs not allowed")
         super(Pulp, self).__init__(option_strings, dest, **kwargs)
-    def __call__(self, parser, namespace, values, option_string=None):
-        print('%r %r %r' % (namespace, values, option_string))
-        print "Pulp action..."
-        setattr(namespace, self.dest, values)
 
+    def __call__(self, parser, namespace, values, option_string=None):
+        #print('%r %r %r' % (namespace, values, option_string))
+        #print "Namespace: %s" % namespace
+        #print "values: %s" % values
+        #print "option_string: %s" % option_string
+        #setattr(namespace, self.dest, values)
+        c = Command(values)
+        c.run_container()
+
+class LoginUser(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        super(LoginUser, self).__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        #setattr(namespace, self.dest, values)
+        #print('%r %r %r' % (namespace, values, option_string))
+        #print('%s' % (namespace.username))
+        #print('%s' % (values))
+        cmd = "-u %s -p %s" % (namespace.username, namespace.password)
+        c = Command(cmd,"login")
+        c.run_container()
+
+class Command(object):
+    def __init__(self,cmd,base=None):
+        self.cmd = cmd
+        self.base = base
+        self.base_cmd = "sudo docker run --rm -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-admin"
+
+    def run_container(self):
+        print "%s %s %s" % (self.base_cmd, self.base, self.cmd)
 
 def main():
     cli = Cli()
-    cli.convert_repo_name()
+    cli.action()
 
 if __name__ == '__main__':
     main()
