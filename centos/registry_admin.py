@@ -58,9 +58,11 @@ class Environment(object):
     def set_context(self):
         """Set SELinux context for dirs"""
         c1 = "sudo chcon -Rvt svirt_sandbox_file_t %s" % self.conf_dir
-        subprocess.call(c1.split())
+        proc = subprocess.Popen(c1.split(), stdout=subprocess.PIPE)
+        proc.wait()
         c2 = "sudo chcon -Rv -u system_u -t svirt_sandbox_file_t %s" % self.uploads_dir
-        subprocess.call(c2.split())
+        proc = subprocess.Popen(c2.split(), stdout=subprocess.PIPE)
+        proc.wait()
 
     def login_user(self):
         """Prompt user to login"""
