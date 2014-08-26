@@ -9,13 +9,17 @@ import subprocess
 import getpass
 
 class Environment(object):
+    """Host environment"""
+
     def __init__(self):
+        """Environment defaults"""
         self.conf_dir = os.path.expanduser("~") + "/.pulp"
         self.conf_file = "admin.conf"
         self.user_cert = "user-cert.pem"
         self.uploads_dir = "/run/docker_uploads"
 
     def setup(self):
+        """Setup host environment directories and login if needed"""
         if not self.is_configured:
             print "Registry config file not found. Setting up environment."
             self.create_config()
@@ -26,13 +30,16 @@ class Environment(object):
 
     @property
     def is_configured(self):
+        """Does the pulp configuration file exist?"""
         return os.path.isfile("%s/%s" % (self.conf_dir, self.conf_file))
 
     @property
     def is_loggedin(self):
+        """Does the pulp user certificate exist?"""
         return os.path.isfile("%s/%s" % (self.conf_dir, self.user_cert))
 
     def create_config(self):
+        """Create config dir, uploads dir and conf file"""
         print "Creating config file %s/%s" % (self.conf_dir, self.conf_file)
         if not os.path.exists(self.conf_dir):
             os.makedirs(self.conf_dir)
@@ -49,12 +56,14 @@ class Environment(object):
         f.close()
 
     def set_context(self):
+        """Set SELinux context for dirs"""
         c1 = "sudo chcon -Rvt svirt_sandbox_file_t %s" % self.conf_dir
         subprocess.call(c1.split())
         c2 = "sudo chcon -Rv -u system_u -t svirt_sandbox_file_t %s" % self.uploads_dir
         subprocess.call(c2.split())
 
     def login_user(self):
+        """Prompt user to login"""
         local_user = getpass.getuser()
         username = raw_input("Enter registry username [%s]: " % local_user) or local_user
         while username is "":
@@ -67,15 +76,18 @@ class Environment(object):
         c.run()
 
     def logout_user(self):
+        """Logout user"""
         cmd = "logout"
         c = Command(cmd)
         c.run()
 
 class Pulp(object):
-    def __init__(self,args):
+    """Construct pulp commands"""
+    def __init__(self, args):
         self.args = args
 
     def parsed_args(self):
+        """Logic to parse arguments"""
         if self.args.mode in "create":
             return ["docker repo create --repo-id %s" % self.repo_name]
         elif self.args.mode in "push":
@@ -83,37 +95,43 @@ class Pulp(object):
                     "docker repo upload uploads --repo-id %s" % self.repo_name,
                     "docker repo publish run --repo-id %s" % self.repo_name]
         elif self.args.mode in "list":
-                return ["docker repo list"]
+            return ["docker repo list"]
         elif self.args.mode in "images":
             return ["docker repo images --repo-id %s" % self.repo_name]
 
     @property
     def repo_name(self):
+        """Returns pulp-friendly repository name without slash"""
         return self.args.repo.replace("/", "-")
 
     def execute(self):
+        """Send parsed command to command class"""
         for cmd in self.parsed_args():
             c = Command(cmd)
             c.run()
 
 class Command(object):
-    def __init__(self,cmd):
+    """Build and run command"""
+    def __init__(self, cmd):
         self.cmd = cmd
 
     @property
     def base_cmd(self):
+        """Construct base pulp admin container command"""
         env = Environment()
         conf_dir = env.conf_dir
         uploads_dir = env.uploads_dir
         return "sudo docker run --rm -t -v %(conf_dir)s:/.pulp -v %(uploads_dir)s:%(uploads_dir)s aweiteka/pulp-admin" % vars()
 
     def run(self):
+        """Run command"""
         cmd = "%s %s" % (self.base_cmd, self.cmd)
         cmd = cmd.split()
         subprocess.call(cmd)
 
 
 def parse_args():
+    """Parse arguments"""
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers(help='sub-command help', dest='mode')
@@ -134,7 +152,7 @@ def parse_args():
     create_parser.add_argument('-b', '--git-branch',
                        metavar='BRANCH',
                        help='git branch name for Dockerfile repository')
-    list_parser = subparsers.add_parser('list', help='repos')
+    subparsers.add_parser('list', help='repos')
     image_parser = subparsers.add_parser('images', help='repo images')
     image_parser.add_argument('repo',
                        metavar='MY/APP',
@@ -146,7 +164,7 @@ def parse_args():
     login_parser.add_argument('-p', '--password',
                        metavar='PASSWORD',
                        help='Pulp registry password')
-    logout_parser = subparsers.add_parser('logout', help='Log out of the pulp registry')
+    subparsers.add_parser('logout', help='Log out of the pulp registry')
     pulp_parser = subparsers.add_parser('pulp', help='pulp-admin commands')
     pulp_parser.add_argument('pulp_cmd',
                        metavar='"PULP COMMAND FOO BAR"',
@@ -154,6 +172,7 @@ def parse_args():
     return parser.parse_args()
 
 def main():
+    """Entrypoint for script"""
     args = parse_args()
     env = Environment()
     if args.mode in "logout":
