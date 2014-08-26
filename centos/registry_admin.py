@@ -75,13 +75,13 @@ class Environment(object):
             password = getpass.getpass("Password blank. Enter registry password: ")
         cmd = "login -u %s -p %s" % (username, password)
         c = Command(cmd)
-        c.run()
+        c.run(stdout=True)
 
     def logout_user(self):
         """Logout user"""
         cmd = "logout"
         c = Command(cmd)
-        c.run()
+        c.run(stdout=True)
 
 class Pulp(object):
     """Construct pulp commands"""
@@ -91,26 +91,42 @@ class Pulp(object):
     def parsed_args(self):
         """Logic to parse arguments"""
         if self.args.mode in "create":
-            return ["docker repo create --repo-id %s" % self.repo_name]
+            return ["docker repo create --repo-id %s" % self.repo_name(self.args.repo)]
         elif self.args.mode in "push":
-            return ["docker repo create --repo-id %s" % self.repo_name,
-                    "docker repo upload uploads --repo-id %s" % self.repo_name,
-                    "docker repo publish run --repo-id %s" % self.repo_name]
+            return ["docker repo create --repo-id %s" % self.repo_name(self.args.repo),
+                    "docker repo upload uploads --repo-id %s" % self.repo_name(self.args.repo),
+                    "docker repo publish run --repo-id %s" % self.repo_name(self.args.repo)]
         elif self.args.mode in "list":
-            return ["docker repo list"]
-        elif self.args.mode in "images":
-            return ["docker repo images --repo-id %s" % self.repo_name]
+            if self.args.list_item not in "repos":
+                return ["docker repo images -d --repo-id %s" % self.repo_name(self.args.list_item)]
+            else:
+                return ["docker repo list --details"]
 
-    @property
-    def repo_name(self):
+    def repo_name(self, repo):
         """Returns pulp-friendly repository name without slash"""
-        return self.args.repo.replace("/", "-")
+        return repo.replace("/", "-")
 
     def execute(self):
         """Send parsed command to command class"""
         for cmd in self.parsed_args():
             c = Command(cmd)
-            c.run()
+            self.format_output(c.run())
+
+    def format_output(self, output):
+        """Format output of commands"""
+        if self.args.mode in "list":
+            if self.args.list_item in "repos":
+                print "REPOS"
+                for out in output.stdout:
+                    print out
+            else:
+                print "IMAGES"
+                for out in output.stdout:
+                    print out
+        else:
+            for out in output.stdout:
+                print out.strip()
+
 
 class Command(object):
     """Build and run command"""
@@ -125,11 +141,16 @@ class Command(object):
         uploads_dir = env.uploads_dir
         return "sudo docker run --rm -t -v %(conf_dir)s:/.pulp -v %(uploads_dir)s:%(uploads_dir)s aweiteka/pulp-admin" % vars()
 
-    def run(self):
+    def run(self, stdout=None):
         """Run command"""
         cmd = "%s %s" % (self.base_cmd, self.cmd)
         cmd = cmd.split()
-        subprocess.call(cmd)
+        if stdout:
+            subprocess.call(cmd)
+        else:
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            proc.wait()
+            return proc
 
 
 def parse_args():
@@ -154,11 +175,10 @@ def parse_args():
     create_parser.add_argument('-b', '--git-branch',
                        metavar='BRANCH',
                        help='git branch name for Dockerfile repository')
-    subparsers.add_parser('list', help='repos')
-    image_parser = subparsers.add_parser('images', help='repo images')
-    image_parser.add_argument('repo',
-                       metavar='MY/APP',
-                       help='Repository name')
+    list_parser = subparsers.add_parser('list', help='repos or images')
+    list_parser.add_argument('list_item',
+                       metavar='repos|MY/APP',
+                       help='Repos or repo images')
     login_parser = subparsers.add_parser('login', help='Login to pulp registry')
     login_parser.add_argument('-u', '--username',
                        metavar='USERNAME',
