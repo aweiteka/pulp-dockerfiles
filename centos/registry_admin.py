@@ -5,6 +5,7 @@
 
 import argparse
 import os.path
+import subprocess
 import getpass
 
 class Environment(object):
@@ -18,10 +19,10 @@ class Environment(object):
         if not self.is_configured:
             print "Registry config file not found. Setting up environment."
             self.create_config()
+        self.set_context()
         if not self.is_loggedin:
             print "User certificate not found."
             self.login_user()
-        self.set_context()
 
     @property
     def is_configured(self):
@@ -48,7 +49,7 @@ class Environment(object):
         f.close()
 
     def set_context(self):
-        print "chcon -Rvt svirt_sandbox_file_t %s" % self.conf_dir
+        print "sudo chcon -Rvt svirt_sandbox_file_t %s" % self.conf_dir
         print "sudo chcon -Rv -u system_u -t svirt_sandbox_file_t %s" % self.uploads_dir
 
     def login_user(self):
@@ -59,26 +60,51 @@ class Environment(object):
         password = getpass.getpass("Enter registry password: ")
         while password is "":
             password = getpass.getpass("Password blank. Enter registry password: ")
-        cmd = "-u %s -p %s" % (username, password)
-        c = Command(cmd,"login")
+        cmd = "login -u %s -p %s" % (username, password)
+        c = Command(cmd)
         c.run()
 
     def logout_user(self):
-        cmd = ""
-        c = Command(cmd,"logout")
+        cmd = "logout"
+        c = Command(cmd)
         c.run()
 
+class Pulp(object):
+    def __init__(self,args):
+        self.args = args
+
+    def parsed_args(self):
+        print self.args
+        if self.args.mode in "create":
+            return ["docker repo create --repo-id %s" % self.repo_name]
+        elif self.args.mode in "push":
+            return ["docker repo create --repo-id %s" % self.repo_name,
+                    "docker repo upload uploads --repo-id %s" % self.repo_name,
+                    "docker repo publish run --repo-id %s" % self.repo_name]
+        elif self.args.mode in "list":
+                return ["docker repo list"]
+        elif self.args.mode in "images":
+            return ["docker repo images --repo-id %s" % self.repo_name]
+
+    @property
+    def repo_name(self):
+        return self.args.repo.replace("/", "-")
+
+    def execute(self):
+        for cmd in self.parsed_args():
+            c = Command(cmd)
+            c.run()
+
 class Command(object):
-    def __init__(self,cmd,mode=None):
+    def __init__(self,cmd):
         self.cmd = cmd
-        self.mode = mode
         self.base_cmd = "sudo docker run --rm -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-admin"
 
     def run(self):
-        print "%s %s %s" % (self.base_cmd, self.mode, self.cmd)
-
-    def convert_repo_name(self, repo):
-        return repo.replace("/", "-")
+        print "RUNNING: %s %s" % (self.base_cmd, self.cmd)
+        #print self.base_cmd + self.cmd
+        #cmd = self.cmd.split()
+        #return subprocess.call(self.base_cmd + self.cmd)
 
 
 def parse_args():
@@ -102,11 +128,11 @@ def parse_args():
     create_parser.add_argument('-b', '--git-branch',
                        metavar='BRANCH',
                        help='git branch name for Dockerfile repository')
-    list_parser = subparsers.add_parser('list', help='images or repos')
-    list_parser.add_argument('list_item',
-                       metavar='repos|images',
-                       choices=['repos', 'images'],
-                       help='What to list')
+    list_parser = subparsers.add_parser('list', help='repos')
+    image_parser = subparsers.add_parser('images', help='repo images')
+    image_parser.add_argument('repo',
+                       metavar='MY/APP',
+                       help='Repository name')
     login_parser = subparsers.add_parser('login', help='Login to pulp registry')
     login_parser.add_argument('-u', '--username',
                        metavar='USERNAME',
@@ -123,12 +149,15 @@ def parse_args():
 
 def main():
     args = parse_args()
-    print args
     env = Environment()
+    if args.mode in "logout":
+        env.logout_user()
+        exit(0)
     env.setup()
-    cmd = args
-    c = Command(cmd,args.mode)
-    c.run()
+    if args.mode in "login":
+        exit(0)
+    p = Pulp(args)
+    p.execute()
 
 if __name__ == '__main__':
     main()
