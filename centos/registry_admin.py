@@ -10,8 +10,8 @@ import getpass
 
 class Environment(object):
     def __init__(self):
-        self.conf_dir = os.path.expanduser("~") + "/dev/tmp/.pulp"
-        self.conf_file = "temp.conf"
+        self.conf_dir = os.path.expanduser("~") + "/.pulp"
+        self.conf_file = "admin.conf"
         self.user_cert = "user-cert.pem"
         self.uploads_dir = "/run/docker_uploads"
 
@@ -49,8 +49,10 @@ class Environment(object):
         f.close()
 
     def set_context(self):
-        print "sudo chcon -Rvt svirt_sandbox_file_t %s" % self.conf_dir
-        print "sudo chcon -Rv -u system_u -t svirt_sandbox_file_t %s" % self.uploads_dir
+        c1 = "sudo chcon -Rvt svirt_sandbox_file_t %s" % self.conf_dir
+        subprocess.call(c1.split())
+        c2 = "sudo chcon -Rv -u system_u -t svirt_sandbox_file_t %s" % self.uploads_dir
+        subprocess.call(c2.split())
 
     def login_user(self):
         local_user = getpass.getuser()
@@ -74,7 +76,6 @@ class Pulp(object):
         self.args = args
 
     def parsed_args(self):
-        print self.args
         if self.args.mode in "create":
             return ["docker repo create --repo-id %s" % self.repo_name]
         elif self.args.mode in "push":
@@ -98,13 +99,18 @@ class Pulp(object):
 class Command(object):
     def __init__(self,cmd):
         self.cmd = cmd
-        self.base_cmd = "sudo docker run --rm -t -v ~/.pulp:/.pulp -v /run/docker_uploads/:/run/docker_uploads/ aweiteka/pulp-admin"
+
+    @property
+    def base_cmd(self):
+        env = Environment()
+        conf_dir = env.conf_dir
+        uploads_dir = env.uploads_dir
+        return "sudo docker run --rm -t -v %(conf_dir)s:/.pulp -v %(uploads_dir)s:%(uploads_dir)s aweiteka/pulp-admin" % vars()
 
     def run(self):
-        print "RUNNING: %s %s" % (self.base_cmd, self.cmd)
-        #print self.base_cmd + self.cmd
-        #cmd = self.cmd.split()
-        #return subprocess.call(self.base_cmd + self.cmd)
+        cmd = "%s %s" % (self.base_cmd, self.cmd)
+        cmd = cmd.split()
+        subprocess.call(cmd)
 
 
 def parse_args():
