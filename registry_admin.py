@@ -7,6 +7,7 @@ import argparse
 import os.path
 import subprocess
 import getpass
+import re
 
 class Environment(object):
     """Host environment"""
@@ -116,11 +117,15 @@ class Pulp(object):
         """Format output of commands"""
         if self.args.mode in "list":
             if self.args.list_item in "repos":
-                print "REPOS"
+                p = re.compile(r'repo-registry-id', re.I)
+                #p = re.compile(r'Id', re.I)
                 for out in output.stdout:
+                    #line = p.search(out)
+                    line = re.search("registry", out)
+                    if line:
+                        print line.group()
                     print out
             else:
-                print "IMAGES"
                 for out in output.stdout:
                     print out
         else:
