@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-arg=$1
-
 IMAGES=( "aweiteka/pulp-crane-allinone" \
          "aweiteka/pulp-worker" \
          "aweiteka/pulp-qpid" \
@@ -33,7 +31,6 @@ function private_ip() {
 
 install() {
 
-  PULP_IP=$1
   PULP_HOST=$(hostname)
 
   echo "Using hostname '${PULP_HOST}'"
@@ -114,7 +111,7 @@ install() {
 }
 
 usage() {
-  echo "USAGE: `basename $0` <pulp_ip_address>|uninstall"
+  echo "USAGE: `basename $0` [uninstall]"
   exit 1
 }
 
@@ -134,16 +131,11 @@ uninstall() {
 
 }
 
-if [ -z "$1" ]; then
-  echo "USAGE: `basename $0` <pulp_ip_address>|uninstall"
-  exit 1
-else
-  case $1 in
-    uninstall)
-      uninstall
-    ;;
-    *) install
-    ;;
-  esac
-fi
+case $1 in
+  uninstall)
+    uninstall
+  ;;
+  *) install
+  ;;
+esac
 
