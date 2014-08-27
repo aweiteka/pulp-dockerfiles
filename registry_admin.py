@@ -8,6 +8,7 @@ import os.path
 import subprocess
 import getpass
 import re
+import tempfile
 
 class Environment(object):
     """Host environment"""
@@ -17,7 +18,8 @@ class Environment(object):
         self.conf_dir = os.path.expanduser("~") + "/.pulp"
         self.conf_file = "admin.conf"
         self.user_cert = "user-cert.pem"
-        self.uploads_dir = "/run/docker_uploads"
+        #self.uploads_dir = "/run/docker_uploads"
+        self.uploads_dir = "/tmp/docker_uploads"
 
     def setup(self):
         """Setup host environment directories and login if needed"""
@@ -98,10 +100,12 @@ class Pulp(object):
             return ["docker repo delete --repo-id %s" %
                         self.repo_name(self.args.repo)]
         elif self.args.mode in "push":
+            temp_file = self.docker_save()
+            print temp_file
             return ["docker repo create --repo-registry-id %s --repo-id %s" %
                         (self.args.repo, self.repo_name(self.args.repo)),
-                    "docker repo upload uploads --repo-id %s" %
-                        self.repo_name(self.args.repo),
+                    "docker repo uploads upload --repo-id %s --file %s" %
+                        (self.repo_name(self.args.repo), temp_file),
                     "docker repo publish run --repo-id %s" %
                         self.repo_name(self.args.repo)]
         elif self.args.mode in "list":
@@ -114,6 +118,16 @@ class Pulp(object):
     def repo_name(self, repo):
         """Returns pulp-friendly repository name without slash"""
         return repo.replace("/", "-")
+
+    def docker_save(self):
+        """Saves docker image, returns temp file"""
+        env = Environment()
+        temp_file = tempfile.NamedTemporaryFile(mode='w+b', dir=env.uploads_dir, suffix=".tar", delete=False)
+        cmd = "sudo docker save -o %s %s" % (temp_file.name, self.args.repo)
+        print "Saving docker file as %s" % temp_file.name
+        subprocess.call(cmd.split())
+        return temp_file.name
+
 
     def execute(self):
         """Send parsed command to command class"""
