@@ -117,17 +117,13 @@ class Pulp(object):
         """Format output of commands"""
         if self.args.mode in "list":
             if self.args.list_item in "repos":
-                p = re.compile(r'repo-registry-id', re.I)
-                #p = re.compile(r'Id', re.I)
-                for out in output.stdout:
-                    #line = p.search(out)
-                    line = re.search("registry", out)
-                    if line:
-                        print line.group()
-                    print out
+                regex = re.compile(r'repo-registry-id:(.+$)', re.I)
             else:
-                for out in output.stdout:
-                    print out
+                regex = re.compile(r'image id:(.+$)', re.I)
+            for out in output.stdout:
+                line = regex.search(out)
+                if line:
+                    print line.group(1).strip()
         else:
             for out in output.stdout:
                 print out.strip()
