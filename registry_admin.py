@@ -93,6 +93,8 @@ class Pulp(object):
         """Logic to parse arguments"""
         if self.args.mode in "create":
             return ["docker repo create --repo-id %s" % self.repo_name(self.args.repo)]
+        elif self.args.mode in "delete":
+            return ["docker repo delete --repo-id %s" % self.repo_name(self.args.repo)]
         elif self.args.mode in "push":
             return ["docker repo create --repo-id %s" % self.repo_name(self.args.repo),
                     "docker repo upload uploads --repo-id %s" % self.repo_name(self.args.repo),
@@ -187,6 +189,10 @@ def parse_args():
     login_parser.add_argument('-p', '--password',
                        metavar='PASSWORD',
                        help='Pulp registry password')
+    delete_parser = subparsers.add_parser('delete', help='repository')
+    delete_parser.add_argument('repo',
+                       metavar='MY/APP',
+                       help='Repository name')
     subparsers.add_parser('logout', help='Log out of the pulp registry')
     pulp_parser = subparsers.add_parser('pulp', help='pulp-admin commands')
     pulp_parser.add_argument('pulp_cmd',
