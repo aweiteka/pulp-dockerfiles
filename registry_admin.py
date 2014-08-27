@@ -93,35 +93,36 @@ class Pulp(object):
 
     def parsed_args(self):
         """Logic to parse arguments"""
-        if self.args.mode in "create":
+        cmd = []
+        if self.args.mode == "create":
             git_str = ""
             if self.args.git_url:
                 git_str = "--note git-url=%s" % self.args.git_url
-            return ["docker repo create --repo-registry-id %s --repo-id %s %s" %
-                        (self.args.repo, self.repo_name(self.args.repo), git_str)]
-        elif self.args.mode in "sync":
-            return ["docker repo create --repo-registry-id %s --repo-id %s --feed %s --upstream-name %s --validate True" %
-                        (self.args.repo, self.repo_name(self.args.repo), self.args.sync_url, self.args.repo)]
-        elif self.args.mode in "delete":
-            return ["docker repo delete --repo-id %s" %
-                        self.repo_name(self.args.repo)]
-        elif self.args.mode in "push":
+            cmd.append("docker repo create --repo-registry-id %s --repo-id %s %s" %
+                        (self.args.repo, self.repo_name(self.args.repo), git_str))
+        elif self.args.mode == "sync":
+            cmd.append("docker repo create --repo-registry-id %s --repo-id %s --feed %s --upstream-name %s --validate True" %
+                        (self.args.repo, self.repo_name(self.args.repo), self.args.sync_url, self.args.repo))
+        elif self.args.mode == "delete":
+            cmd.append("docker repo delete --repo-id %s" %
+                        self.repo_name(self.args.repo))
+        elif self.args.mode == "push":
             temp_file = self.docker_save()
-            print temp_file
-            return ["docker repo create --repo-registry-id %s --repo-id %s" %
-                        (self.args.repo, self.repo_name(self.args.repo)),
-                    "docker repo uploads upload --repo-id %s --file %s" %
-                        (self.repo_name(self.args.repo), temp_file),
-                    "docker repo publish run --repo-id %s" %
-                        self.repo_name(self.args.repo)]
-        elif self.args.mode in "history":
-            return ["tasks list"]
-        elif self.args.mode in "list":
-            if self.args.list_item not in "repos":
-                return ["docker repo images -d --repo-id %s" %
-                            self.repo_name(self.args.list_item)]
+            cmd.append("docker repo create --repo-registry-id %s --repo-id %s" %
+                        (self.args.repo, self.repo_name(self.args.repo)))
+            cmd.append("docker repo uploads upload --repo-id %s --file %s" %
+                        (self.repo_name(self.args.repo), temp_file))
+            cmd.append("docker repo publish run --repo-id %s" %
+                        self.repo_name(self.args.repo))
+        elif self.args.mode == "history":
+            cmd.append("tasks list")
+        elif self.args.mode == "list":
+            if self.args.list_item != "repos":
+                cmd.append("docker repo images -d --repo-id %s" %
+                            self.repo_name(self.args.list_item))
             else:
-                return ["docker repo list --details"]
+                cmd.append("docker repo list --details")
+        return cmd
 
     def repo_name(self, repo):
         """Returns pulp-friendly repository name without slash"""
@@ -145,8 +146,8 @@ class Pulp(object):
 
     def format_output(self, output):
         """Format output of commands"""
-        if self.args.mode in "list":
-            if self.args.list_item in "repos":
+        if self.args.mode is "list":
+            if self.args.list_item is "repos":
                 regex = re.compile(r'repo-registry-id:(.+$)', re.I)
             else:
                 regex = re.compile(r'image id:(.+$)', re.I)
