@@ -146,8 +146,8 @@ class Pulp(object):
 
     def format_output(self, output):
         """Format output of commands"""
-        if self.args.mode is "list":
-            if self.args.list_item is "repos":
+        if self.args.mode == "list":
+            if self.args.list_item == "repos":
                 regex = re.compile(r'repo-registry-id:(.+$)', re.I)
             else:
                 regex = re.compile(r'image id:(.+$)', re.I)
