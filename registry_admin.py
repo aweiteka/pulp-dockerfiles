@@ -92,16 +92,22 @@ class Pulp(object):
     def parsed_args(self):
         """Logic to parse arguments"""
         if self.args.mode in "create":
-            return ["docker repo create --repo-id %s" % self.repo_name(self.args.repo)]
+            return ["docker repo create --repo-registry-id %s --repo-id %s" %
+                        (self.args.repo, self.repo_name(self.args.repo))]
         elif self.args.mode in "delete":
-            return ["docker repo delete --repo-id %s" % self.repo_name(self.args.repo)]
+            return ["docker repo delete --repo-id %s" %
+                        self.repo_name(self.args.repo)]
         elif self.args.mode in "push":
-            return ["docker repo create --repo-id %s" % self.repo_name(self.args.repo),
-                    "docker repo upload uploads --repo-id %s" % self.repo_name(self.args.repo),
-                    "docker repo publish run --repo-id %s" % self.repo_name(self.args.repo)]
+            return ["docker repo create --repo-registry-id %s --repo-id %s" %
+                        (self.args.repo, self.repo_name(self.args.repo)),
+                    "docker repo upload uploads --repo-id %s" %
+                        self.repo_name(self.args.repo),
+                    "docker repo publish run --repo-id %s" %
+                        self.repo_name(self.args.repo)]
         elif self.args.mode in "list":
             if self.args.list_item not in "repos":
-                return ["docker repo images -d --repo-id %s" % self.repo_name(self.args.list_item)]
+                return ["docker repo images -d --repo-id %s" %
+                            self.repo_name(self.args.list_item)]
             else:
                 return ["docker repo list --details"]
 
