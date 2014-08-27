@@ -189,23 +189,23 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers(help='sub-command help', dest='mode')
-    push_parser = subparsers.add_parser('push', help='repository')
+    push_parser = subparsers.add_parser('push', help='Push a repository to the registry')
     push_parser.add_argument('repo',
                        metavar='MY/APP',
                        help='Repository name')
-    create_parser = subparsers.add_parser('create', help='repository')
+    create_parser = subparsers.add_parser('create', help='Create an empty repository, optionally tag with Dockerfile git repo')
     create_parser.add_argument('repo',
                        metavar='MY/APP',
                        help='Repository name')
     create_parser.add_argument('-g', '--git-url',
                        metavar='http://git.example.com/repo/myapp',
-                       help='URL of git repository for Dockerfile')
-    create_parser.add_argument('-t', '--git-tag',
-                       metavar='TAG',
-                       help='git tag name for Dockerfile repository')
+                       help='URL of Dockerfile git repository')
     create_parser.add_argument('-b', '--git-branch',
                        metavar='BRANCH',
-                       help='git branch name for Dockerfile repository')
+                       help='git branch of Dockerfile repository')
+    #create_parser.add_argument('-t', '--git-tag',
+    #                   metavar='TAG',
+    #                   help='git tag of Dockerfile repository')
     sync_parser = subparsers.add_parser('sync', help='Sync a repository from another registry')
     sync_parser.add_argument('repo',
                        metavar='MY/APP',
@@ -213,10 +213,15 @@ def parse_args():
     sync_parser.add_argument('sync_url',
                        metavar='https://registry.access.redhat.com',
                        help='Base URL of registry to sync from')
-    list_parser = subparsers.add_parser('list', help='repos or images')
+    delete_parser = subparsers.add_parser('delete', help='repository')
+    delete_parser.add_argument('repo',
+                       metavar='MY/APP',
+                       help='Repository name')
+    list_parser = subparsers.add_parser('list', help='List registry repos or images in a repo')
     list_parser.add_argument('list_item',
                        metavar='repos|MY/APP',
                        help='Repos or repo images')
+    subparsers.add_parser('history', help='Display history of registry tasks')
     login_parser = subparsers.add_parser('login', help='Login to pulp registry')
     login_parser.add_argument('-u', '--username',
                        metavar='USERNAME',
@@ -224,12 +229,7 @@ def parse_args():
     login_parser.add_argument('-p', '--password',
                        metavar='PASSWORD',
                        help='Pulp registry password')
-    delete_parser = subparsers.add_parser('delete', help='repository')
-    delete_parser.add_argument('repo',
-                       metavar='MY/APP',
-                       help='Repository name')
-    subparsers.add_parser('history', help='Display history of registry tasks')
-    subparsers.add_parser('logout', help='Log out of the pulp registry')
+    subparsers.add_parser('logout', help='Logout of the pulp registry')
     pulp_parser = subparsers.add_parser('pulp', help='pulp-admin commands')
     pulp_parser.add_argument('pulp_cmd',
                        metavar='"PULP COMMAND FOO BAR"',
