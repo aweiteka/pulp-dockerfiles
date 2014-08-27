@@ -99,6 +99,11 @@ class Pulp(object):
                 git_str = "--note git-url=%s" % self.args.git_url
             return ["docker repo create --repo-registry-id %s --repo-id %s %s" %
                         (self.args.repo, self.repo_name(self.args.repo), git_str)]
+        elif self.args.mode in "sync":
+            str = ["docker repo create --repo-registry-id %s --repo-id %s --feed %s --upstream-name %s --validate True" %
+                        (self.args.repo, self.repo_name(self.args.repo), self.args.sync_url, self.args.repo)]
+            print str
+            return str
         elif self.args.mode in "delete":
             return ["docker repo delete --repo-id %s" %
                         self.repo_name(self.args.repo)]
@@ -201,6 +206,13 @@ def parse_args():
     create_parser.add_argument('-b', '--git-branch',
                        metavar='BRANCH',
                        help='git branch name for Dockerfile repository')
+    sync_parser = subparsers.add_parser('sync', help='Sync a repository from another registry')
+    sync_parser.add_argument('repo',
+                       metavar='MY/APP',
+                       help='Repository name')
+    sync_parser.add_argument('sync_url',
+                       metavar='https://registry.access.redhat.com',
+                       help='Base URL of registry to sync from')
     list_parser = subparsers.add_parser('list', help='repos or images')
     list_parser.add_argument('list_item',
                        metavar='repos|MY/APP',
