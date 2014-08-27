@@ -94,8 +94,11 @@ class Pulp(object):
     def parsed_args(self):
         """Logic to parse arguments"""
         if self.args.mode in "create":
-            return ["docker repo create --repo-registry-id %s --repo-id %s" %
-                        (self.args.repo, self.repo_name(self.args.repo))]
+            git_str = ""
+            if self.args.git_url:
+                git_str = "--note git-url=%s" % self.args.git_url
+            return ["docker repo create --repo-registry-id %s --repo-id %s %s" %
+                        (self.args.repo, self.repo_name(self.args.repo), git_str)]
         elif self.args.mode in "delete":
             return ["docker repo delete --repo-id %s" %
                         self.repo_name(self.args.repo)]
