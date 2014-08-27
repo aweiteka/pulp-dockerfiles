@@ -100,10 +100,8 @@ class Pulp(object):
             return ["docker repo create --repo-registry-id %s --repo-id %s %s" %
                         (self.args.repo, self.repo_name(self.args.repo), git_str)]
         elif self.args.mode in "sync":
-            str = ["docker repo create --repo-registry-id %s --repo-id %s --feed %s --upstream-name %s --validate True" %
+            return ["docker repo create --repo-registry-id %s --repo-id %s --feed %s --upstream-name %s --validate True" %
                         (self.args.repo, self.repo_name(self.args.repo), self.args.sync_url, self.args.repo)]
-            print str
-            return str
         elif self.args.mode in "delete":
             return ["docker repo delete --repo-id %s" %
                         self.repo_name(self.args.repo)]
@@ -116,6 +114,8 @@ class Pulp(object):
                         (self.repo_name(self.args.repo), temp_file),
                     "docker repo publish run --repo-id %s" %
                         self.repo_name(self.args.repo)]
+        elif self.args.mode in "history":
+            return ["tasks list"]
         elif self.args.mode in "list":
             if self.args.list_item not in "repos":
                 return ["docker repo images -d --repo-id %s" %
@@ -228,6 +228,7 @@ def parse_args():
     delete_parser.add_argument('repo',
                        metavar='MY/APP',
                        help='Repository name')
+    subparsers.add_parser('history', help='Display history of registry tasks')
     subparsers.add_parser('logout', help='Log out of the pulp registry')
     pulp_parser = subparsers.add_parser('pulp', help='pulp-admin commands')
     pulp_parser.add_argument('pulp_cmd',
