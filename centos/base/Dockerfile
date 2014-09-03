@@ -18,6 +18,11 @@ RUN yum install -y git findutils && \
 # install pulp_docker plugin to manage docker image repositories
 RUN git clone https://github.com/pulp/pulp_docker.git /opt/pulp_docker
 
+WORKDIR /opt/pulp_docker
+
+# checkout earlier commit without unsupport sync feature
+RUN git checkout 4a0dd8f9ba0b30cb689b088151082b36992d88ce
+
 RUN /opt/pulp_docker/manage_setup_pys.sh develop
 
 RUN python /opt/pulp_docker/pulp-dev.py -I
